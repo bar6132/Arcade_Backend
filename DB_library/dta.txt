@@ -1,0 +1,123 @@
+import React, { useContext } from 'react';
+import { AppContext } from '../App';
+
+function SignUp() {
+    const {url} = useContext(AppContext)
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const email = document.getElementById('email').value;
+    const location = document.getElementById('location').value;
+    const age = document.getElementById('age').value;
+    const phone = document.getElementById('phone').value;
+  
+    
+    if (password !== confirmPassword) {
+      alert('Passwords do not match. Please try again.');
+      return;
+    }
+    
+    const data = {'username': username, 'password': password, 'email': email};
+    const user = {'user' : data , 'location': location, 'age': age, 'phone': phone  }
+
+    fetch(`${url}signup`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {'Content-Type': 'application/json'}
+    })
+      .then(response => {
+        if (response.status !== 200) {
+          
+          return;
+        }
+        return response.json();
+      })
+      .then(data => {
+        const userString = JSON.stringify(data.user);
+
+        console.log('Token:', data.token);
+        console.log('username:', data.username);
+        localStorage.setItem('user', userString);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('username', data.username)
+      })
+      .catch(error => {
+        console.error(error);
+        alert('Could not create user. Please try again.');
+        document.getElementById('name').value = '';
+        document.getElementById('email').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('confirmPassword').value = '';
+      });
+    };
+      
+    
+    return (
+      <>
+        <div>
+          <form id="signup-form" onSubmit={handleSubmit}>
+            <label htmlFor="username">Username:</label>
+            <input type="text" id="username" name="username"/><br/>
+            <label htmlFor="password">Password:</label>
+            <input type="password" id="password" name="password"/><br/>
+            <label htmlFor="confirmPassword">Confirm Password:</label>
+            <input type="password" id="confirmPassword" name="confirmPassword"/><br/>
+            <label htmlFor="email">Email:</label>
+            <input type="email" id="email" name="email"/><br/>
+            <label htmlFor="location">location:</label>
+            <input type="text" id="location" name="location"/><br/>
+            <label htmlFor="age">age:</label>
+            <input type="text" id="age" name="age"/><br/>
+            <label htmlFor="phone">phone:</label>
+            <input type="text" id="phone" name="phone"/><br/>
+            <button type="submit">הרשם</button>
+          </form>
+        </div>
+      </>
+    );
+}
+
+export default SignUp;
+
+
+import { useState } from 'react';
+import ListGroup from 'react-bootstrap/ListGroup';
+
+function UserProfile({ username }) {
+  const [userProfile, setUserProfile] = useState(null);
+
+  const handleClick = async () => {
+    const response = await fetch(`${url}get-user-profile/${username}`, {
+      headers: {
+        Authorization: `Token ${token}`
+      }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setUserProfile(data);
+    } else {
+      alert('Error fetching user profile!');
+    }
+  };
+
+  return (
+    <ListGroup.Item onClick={handleClick}>
+      {username}
+      {userProfile && (
+        <div>
+          <p>Location: {userProfile.location}</p>
+          <p>Age: {userProfile.age}</p>
+          <p>Phone: {userProfile.phone}</p>
+          <p>Email: {userProfile.email}</p>
+        </div>
+      )}
+    </ListGroup.Item>
+  );
+}
+
+export default UserProfile;
