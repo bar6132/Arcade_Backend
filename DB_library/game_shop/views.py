@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.authentication import TokenAuthentication
 from django.contrib.auth.models import User
 from rest_framework.response import Response
-from .models import Game, UserProfile, ContactMsg
+from .models import Game, UserProfile, ContactMsg, Message
 from .serializers import GameSerializer, UserProfileSerializer, ContactMsgSerializer, MessageSerializer, UserSerializer
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.authtoken.models import Token
@@ -243,6 +243,7 @@ def signup(request):
     }
     return Response(data, status=201)
 
+
 @api_view(['GET', 'POST', 'PATCH', 'DELETE'])
 def inbox(request, pk=None):
     if request.method == 'GET':
@@ -292,13 +293,13 @@ def inbox(request, pk=None):
             return Response({'error': 'Message ID (pk) is required for deletion.'}, status=400)
 
 
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'POST', 'PUT'])
 def user_inbox(request, pk):
     if request.method == 'GET':
         try:
             user_profile = UserProfile.objects.get(pk=pk)
-            user_id = user_profile.user.id  # Get the user ID from the UserProfile object
-            messages = user_profile.user.received_messages.all()  # Use the user profile to access the related User object
+            user_id = user_profile.user.id
+            messages = user_profile.user.received_messages.all()
             serializer = MessageSerializer(messages, many=True)
             return Response(serializer.data)
         except UserProfile.DoesNotExist:
@@ -313,6 +314,17 @@ def user_inbox(request, pk):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'PUT':
+        try:
+            message = Message.objects.get(pk=pk)
+        except Message.DoesNotExist:
+            return Response({'error': 'Message does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        message.is_read = True
+        message.save()
+        serializer = MessageSerializer(message)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 def serve_game_pagination(request):

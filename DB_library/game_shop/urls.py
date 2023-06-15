@@ -11,6 +11,7 @@ urlpatterns = [
     path('signup', views.signup),
     path('obtain-token', obtain_auth_token),
     path('users/<int:pk>/inbox/', views.user_inbox, name='inbox'),
+    path('messages/<int:pk>', views.user_inbox, name='inbox'),
     path('get-user-data', views.get_user_data),
     path('getuser/<int:pk>', views.get_user),
     path('get-all-users', views.manage_users),
