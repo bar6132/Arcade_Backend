@@ -3,7 +3,7 @@ from . import consumers
 
 
 websocket_urlpatterns = [
-    path('ws', consumers.Consumer.as_asgi()),
+    path('ws', consumers.MyConsumer.as_asgi()),
     
 
 ]

@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from rest_framework import status
 from django.db import IntegrityError
 from rest_framework.decorators import api_view, authentication_classes
@@ -10,6 +11,8 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.authtoken.models import Token
 from django.core.cache import cache, caches
 from django.views.decorators.cache import cache_page
+from django.http import JsonResponse
+
 
 
 @api_view(['POST'])
@@ -343,3 +346,22 @@ def serve_game_pagination(request):
            'hes_more': end <= len(game)
            }
     return Response(res)
+
+
+
+def chat(req):
+    return render(request=req, template_name='my_app/index.html')
+
+
+
+def serve_chat_rooms(request):
+    from channels.layers import get_channel_layer
+    channel_layer = get_channel_layer()
+    groups = list(channel_layer.groups.keys())
+    return JsonResponse({'chat_rooms': groups})
+
+def serve_room_participants(request, group):
+    from channels.layers import get_channel_layer
+    channel_layer = get_channel_layer()
+    participants = list(channel_layer.groups.get(group, []))
+    return JsonResponse({'room_participants': participants})

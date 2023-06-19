@@ -32,6 +32,8 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Application definition
 
 INSTALLED_APPS = [
+    # 'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,6 +45,15 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
 ]
+
+ASGI_APPLICATION = 'DB_library.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        # in production, change it to redis (InMem no cross-process messaging is possible)
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    }
+}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
