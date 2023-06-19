@@ -296,7 +296,7 @@ def inbox(request, pk=None):
             return Response({'error': 'Message ID (pk) is required for deletion.'}, status=400)
 
 
-@api_view(['GET', 'POST', 'PUT'])
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def user_inbox(request, pk):
     if request.method == 'GET':
         try:
@@ -327,7 +327,17 @@ def user_inbox(request, pk):
         message.save()
         serializer = MessageSerializer(message)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
+    
+    elif request.method == 'DELETE':
+        if pk is not None:
+            try:
+                message = Message.objects.get(pk=pk)
+                message.delete()
+                return Response({'message': 'Message deleted successfully.'}, status=200)
+            except Message.DoesNotExist:
+                return Response({'error': 'Message not found.'}, status=404)
+        else:
+            return Response({'error': 'Message ID (pk) is required for deletion.'}, status=400)
 
 @api_view(['GET'])
 def serve_game_pagination(request):
