@@ -14,7 +14,6 @@ from django.views.decorators.cache import cache_page
 from django.http import JsonResponse
 
 
-
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 def my_view(request):
@@ -115,6 +114,7 @@ def uploader_data(request, pk):
         serializer = UserProfileSerializer(profile)
         return Response(serializer.data)
 
+
 @csrf_exempt
 @api_view(['GET'])
 def get_user(request, pk):
@@ -134,7 +134,7 @@ def games(request, pk=None):
         if pk is None:
             g = Game.objects.all()
             serializer = GameSerializer(g, many=True).data
-            cache.set('games',[serializer])
+            cache.set('games', [serializer])
             return Response(serializer)
         else:
             g = Game.objects.get(pk=pk)
@@ -145,7 +145,6 @@ def games(request, pk=None):
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 @authentication_classes([TokenAuthentication])
 def game(request, pk=None):
-
     if request.method == 'GET':
         if pk is None:
             g = Game.objects.all()
@@ -339,6 +338,7 @@ def user_inbox(request, pk):
         else:
             return Response({'error': 'Message ID (pk) is required for deletion.'}, status=400)
 
+
 @api_view(['GET'])
 def serve_game_pagination(request):
     page_size = int(request.GET.get('page_size', 20))
@@ -358,10 +358,8 @@ def serve_game_pagination(request):
     return Response(res)
 
 
-
 def chat(req):
     return render(request=req, template_name='my_app/index.html')
-
 
 
 def serve_chat_rooms(request):
@@ -369,6 +367,7 @@ def serve_chat_rooms(request):
     channel_layer = get_channel_layer()
     groups = list(channel_layer.groups.keys())
     return JsonResponse({'chat_rooms': groups})
+
 
 def serve_room_participants(request, group):
     from channels.layers import get_channel_layer
