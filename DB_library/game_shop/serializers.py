@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from .models import Game, UserProfile, User, ContactMsg, Message
 
+"""
+            All of the Serializer of the Models
+"""
 
 class ContactMsgSerializer(serializers.ModelSerializer):
     class Meta:
