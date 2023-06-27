@@ -10,7 +10,6 @@ from .serializers import GameSerializer, UserProfileSerializer, ContactMsgSerial
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.authtoken.models import Token
 from django.core.cache import cache, caches
-from django.views.decorators.cache import cache_page
 from django.http import JsonResponse
 
 
@@ -27,6 +26,8 @@ def my_view(request):
 @api_view(['GET', 'PATCH', 'DELETE'])
 @authentication_classes([TokenAuthentication])
 def manage_users(request):
+    """The function allows you to access and manage all users.
+    You have the option to delete a user or promote them to a super user."""
     if request.method == 'GET':
         users = User.objects.all()
         user_data = []
@@ -64,6 +65,8 @@ def manage_users(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 def get_user_data(request):
+    """The function takes user data as input
+    and returns the user information."""
     user = request.user
     user_profile = UserProfile.objects.get(user=user)
     user_data = {
@@ -87,6 +90,8 @@ def get_user_data(request):
 
 @api_view(['GET', 'PUT'])
 def get_profile(request, pk):
+    """The function retrieves the user profile based on the provided ID. 
+    It displays the profile information and allows you to make edits to the profile."""
     try:
         profile = UserProfile.objects.get(pk=pk)
     except UserProfile.DoesNotExist:
@@ -103,9 +108,11 @@ def get_profile(request, pk):
         else:
             return Response(serializer.errors, status=400)
             
-            
 @api_view(['GET'])
 def uploader_data(request, pk):
+    """The function retrieves the information
+    of the game uploader based on their ID."""            
+
     try:
         profile = UserProfile.objects.get(pk=pk)
     except UserProfile.DoesNotExist:
@@ -114,10 +121,11 @@ def uploader_data(request, pk):
         serializer = UserProfileSerializer(profile)
         return Response(serializer.data)
 
-
 @csrf_exempt
 @api_view(['GET'])
 def get_user(request, pk):
+    """The function return the user by their ID."""
+
     profile = User.objects.get(pk=pk)
     if request.method == 'GET':
         serializer = UserSerializer(profile)
@@ -128,6 +136,7 @@ def get_user(request, pk):
 @api_view(['GET'])
 def games(request, pk=None):
     """
+    The function
     Get all games or one only
     """
     if request.method == 'GET':
@@ -145,6 +154,8 @@ def games(request, pk=None):
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 @authentication_classes([TokenAuthentication])
 def game(request, pk=None):
+    """"The function allows you to access and manage all users.
+    You have the option to delete a user or promote them to a super user."""
     if request.method == 'GET':
         if pk is None:
             g = Game.objects.all()
@@ -193,7 +204,7 @@ def game(request, pk=None):
 @csrf_exempt
 @api_view(['POST'])
 def signup(request):
-    # Get data from request
+    """ Get data from request """
     username = request.data.get("username", None)
     password = request.data.get("password", None)
     email = request.data.get("email", None)
@@ -248,6 +259,8 @@ def signup(request):
 
 @api_view(['GET', 'POST', 'PATCH', 'DELETE'])
 def inbox(request, pk=None):
+    """The function retrieves the inbox for the superuser, containing messages sent by users.
+      It displays the messages, allowing you to delete them and edit their status as 'completed' or 'in progress'."""
     if request.method == 'GET':
         if pk is not None:
             try:
@@ -297,6 +310,8 @@ def inbox(request, pk=None):
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def user_inbox(request, pk):
+    """The function retrieves the user's inbox where they receive messages from other users regarding the games they would like to buy.
+      It allows the user to read the messages and delete them if needed."""
     if request.method == 'GET':
         try:
             user_profile = UserProfile.objects.get(pk=pk)
@@ -363,6 +378,7 @@ def chat(req):
 
 
 def serve_chat_rooms(request):
+    """The function retrieves the chat room, allowing users to engage in real-time conversation and communication."""
     from channels.layers import get_channel_layer
     channel_layer = get_channel_layer()
     groups = list(channel_layer.groups.keys())
@@ -370,6 +386,8 @@ def serve_chat_rooms(request):
 
 
 def serve_room_participants(request, group):
+    """The function retrieves the list of participants in a chat room,
+      providing information about the users currently present in the room."""
     from channels.layers import get_channel_layer
     channel_layer = get_channel_layer()
     participants = list(channel_layer.groups.get(group, []))
