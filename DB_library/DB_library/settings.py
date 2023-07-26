@@ -20,18 +20,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-7h8#knwl2!ot&bcufk+aeq8q3hsor)uptqfqshq9*neyb!rd-3'
+SECRET_KEY = os.environ.get('dj_pass')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+	"127.0.0.1",
+	"54.161.131.192",
+	'localhost',
+]
+
 CORS_ORIGIN_ALLOW_ALL = True
-
-
+#CORS_ALLOWED_ORIGINS = [
+#	"http://localhost:8000",
+#	"http://127.0.0.1:8000",
+ #   	"http://54.161.131.192",
+#]
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     'channels',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -43,9 +52,20 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
+    'storages',
 ]
 
 ASGI_APPLICATION = 'DB_library.asgi.application'
+
+
+#CHANNEL_LAYERS = {
+#         "default": {
+#             "BACKEND": "channels_redis.core.RedisChannelLayer",
+#             "CONFIG": {
+#                 "hosts": [("localhost", 6379)],
+#             },
+#         },
+#    }
 
 CHANNEL_LAYERS = {
     'default': {
@@ -54,6 +74,13 @@ CHANNEL_LAYERS = {
     }
 }
 
+
+#CHANNEL_LAYERS = {
+#    'default': {
+#        'BACKEND': 'channels_db.core.database_layer',
+#        'ROUTING': 'myapp.routing.channel_routing',
+#    },
+#}
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -97,8 +124,12 @@ WSGI_APPLICATION = 'DB_library.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+	'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': os.environ.get('db_pass'),
+	'HOST': 'arcade.cq2dlenbmbxm.us-east-1.rds.amazonaws.com',
+        'PORT': '5432'
     }
 }
 
@@ -137,10 +168,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
-MEDIA_URL = 'media/'
+STATIC_URL = 'django_static/'
+STATIC_ROOT = '/arcade/django/static/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+#MEDIA_URL = 'media/'
+#MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -153,3 +185,13 @@ CACHES = {
         "LOCATION": f"{BASE_DIR}/cache_file",
     }
 }
+
+
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_STORAGE_BUCKET_NAME = 'arcade'
+AWS_ACCESS_KEY_ID = os.environ.get('my_key')
+AWS_SECRET_ACCESS_KEY = os.environ.get('my_acc')
+
+
+

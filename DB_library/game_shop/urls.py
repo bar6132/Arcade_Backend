@@ -26,8 +26,8 @@ urlpatterns = [
     path('inbox/<int:pk>', views.inbox),
     path('page', paginators.GamePagination.as_view()),
     path('serve_game_pagination', paginators.serve_game_pagination),
-    path('chat', views.chat),
-    path('rooms', views.serve_chat_rooms),
+#   path('chat', views.chat),
+#    path('rooms', views.serve_chat_rooms),
 ]
 
 urlpatterns = urlpatterns + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

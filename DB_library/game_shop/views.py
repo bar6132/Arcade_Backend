@@ -9,8 +9,9 @@ from .models import Game, UserProfile, ContactMsg, Message
 from .serializers import GameSerializer, UserProfileSerializer, ContactMsgSerializer, MessageSerializer, UserSerializer
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.authtoken.models import Token
-from django.core.cache import cache, caches
+from django.core.cache import cache
 from django.http import JsonResponse
+from .my_buto import generate_presigned_url, upload_file_to_s3, get_image_url_from_s3
 
 
 @api_view(['POST'])
@@ -107,7 +108,7 @@ def get_profile(request, pk):
             return Response(serializer.data)
         else:
             return Response(serializer.errors, status=400)
-            
+
 @api_view(['GET'])
 def uploader_data(request, pk):
     """The function retrieves the information
@@ -142,13 +143,23 @@ def games(request, pk=None):
     if request.method == 'GET':
         if pk is None:
             g = Game.objects.all()
-            serializer = GameSerializer(g, many=True).data
-            cache.set('games', [serializer])
-            return Response(serializer)
+            serializer = GameSerializer(g, many=True)
+            serialized_data = serializer.data
+
+            for game_data in serialized_data:
+                image_name = game_data['game_img']
+                game_data['game_img'] = get_image_url_from_s3(image_name).replace("//", "/")
+                print(image_name)
+
+            cache.set('games', serialized_data)
+            return Response(serialized_data)
         else:
             g = Game.objects.get(pk=pk)
             serializer = GameSerializer(g)
-            return Response(serializer.data)
+            serialized_data = serializer.data
+            image_name = serialized_data['game_img']
+            serialized_data['game_img'] = get_image_url_from_s3(image_name).replace("//", "/")
+            return Response(serialized_data)
 
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
@@ -171,8 +182,20 @@ def game(request, pk=None):
         if serializer.is_valid():
             cache.delete('games')
             uploader = UserProfile.objects.get(user=request.user)
-            serializer.save(uploader=uploader)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            game_img = request.FILES.get('game_img')
+            if game_img:
+                file_name = game_img.name
+                presigned_url = generate_presigned_url(f"images/{file_name}")
+                if presigned_url:
+                    success = upload_file_to_s3(presigned_url, game_img)
+                    if success:
+                        serializer.save(uploader=uploader)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    else:
+                        error_message = "Error uploading game file to S3"
+            else:
+                serializer.save(uploader=uploader)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             error_message = serializer.errors
             print(f"Error adding game: {error_message}")

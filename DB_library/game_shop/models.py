@@ -60,6 +60,7 @@ class Game(models.Model):
 
 class ContactMsg(models.Model):
     subject = models.CharField(max_length=100)
+    name = models.CharField(max_length=20, blank=True, null=True) 
     body = models.CharField(max_length=1000)
     email = models.EmailField()
     status = models.CharField(max_length=20, choices=[('in_progress', 'In Progress'), ('completed', 'Completed')])
